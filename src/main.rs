@@ -226,7 +226,7 @@ impl Visualizer {
             unsafe { ColorAlphaBlend(background_color, foreground_color, color) };
 
         for (i, &t) in self.out_smooth[..m].iter().enumerate() {
-            let angle = i as f32 * angle_step - PI * 0.5 ;
+            let angle = i as f32 * angle_step - PI * 0.5;
             let (sin_a, cos_a) = angle.sin_cos();
 
             let start_r = dynamic_inner_radius;
@@ -563,13 +563,14 @@ pub fn draw_text_with_supported_emojis(
     }
 }
 
-const DEFAULT_MUSIC_FOLDER_PATH: &str = "~/Music/";
 const WIDTH: i32 = 1200;
 const HEIGHT: i32 = 800;
 
 fn main() -> Result<(), std::io::Error> {
-    let music_folder =
-        env::var("MUSIC_FOLDER_PATH").unwrap_or(DEFAULT_MUSIC_FOLDER_PATH.to_string());
+    let Ok(music_folder) = env::var("MUSIC_FOLDER_PATH") else {
+        eprintln!("ERROR: variable MUSIC_FOLDER_PATH not defined");
+        return Ok(());
+    };
     let entries = fs::read_dir(music_folder)?
         .map(|res| res.map(|e| e.path()))
         .collect::<Result<Vec<_>, std::io::Error>>()?;
