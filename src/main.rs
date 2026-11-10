@@ -567,15 +567,18 @@ const WIDTH: i32 = 1200;
 const HEIGHT: i32 = 800;
 
 fn main() -> Result<(), std::io::Error> {
-    let Ok(music_folder) = env::var("MUSIC_FOLDER_PATH") else {
-        eprintln!("ERROR: variable MUSIC_FOLDER_PATH not defined");
-        return Ok(());
+    let music_folder_entries = {
+        if let Ok(music_folder) = env::var("MUSIC_FOLDER_PATH") {
+            fs::read_dir(music_folder)?
+                .map(|res| res.map(|e| e.path()))
+                .collect::<Result<Vec<_>, std::io::Error>>()?
+        } else {
+            eprintln!("WARN: variable MUSIC_FOLDER_PATH not defined");
+            vec![]
+        }
     };
-    let entries = fs::read_dir(music_folder)?
-        .map(|res| res.map(|e| e.path()))
-        .collect::<Result<Vec<_>, std::io::Error>>()?;
 
-    let tracks = entries
+    let tracks = music_folder_entries
         .into_iter()
         .filter(|p| p.extension().is_some_and(|e| e == "mp3"))
         .collect();
