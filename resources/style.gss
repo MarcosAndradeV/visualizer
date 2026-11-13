@@ -1,0 +1,6 @@
+foreground_color = 0xAAAAAAFF
+background_color = 0x181818FF
+center = {
+    x = 50%,
+    y = 50%
+}

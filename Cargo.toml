@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+muxui = { git = "https://github.com/MarcosAndradeV/muxui", version = "0.1.0" }
 num = "0.4.3"
-raylib = { path = "raylib-rs", version = "0.1.0" }
+rfd = "0.18.0"
