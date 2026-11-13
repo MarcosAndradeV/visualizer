@@ -452,6 +452,7 @@ impl MusicPlaylist {
             .and_then(|idx| self.entries.get(idx))
             .and_then(|p| p.file_name())
             .and_then(|f| f.to_str())
+            .or(Some("test"))
     }
 
     fn stop_and_unload(&mut self) {
@@ -609,6 +610,11 @@ struct AppState {
     fonts: FontRenderer,
     playlist: MusicPlaylist,
     ring_buffer: Arc<AudioRingBuffer>,
+
+    track_label_position: Vector2,
+    background_color: Color,
+    foreground_color: Color,
+    center: Vector2,
 }
 
 impl Drop for AppState {
@@ -666,6 +672,10 @@ fn main() {
             fonts,
             playlist,
             ring_buffer,
+            track_label_position: Vector2::zero(),
+            background_color: Color::from_hex(0x181818FF),
+            foreground_color: Color::from_hex(0xAAAAAAFF),
+            center: Vector2::zero()
         }
     })
     .set_fps(RENDER_FPS)
@@ -689,10 +699,21 @@ fn main() {
     .register_mouse_axis("mouseY", muxui::MouseAxis::Y, 1.0)
     .register_mouse_axis("mouseX", muxui::MouseAxis::X, 1.0)
     .on_update_with_input(update)
+    .on_style_reload(|ctx, s| {
+        let screen = get_virtual_screen_size();
+        ctx.track_label_position = screen
+            * Vector2 {
+                x: s.get_val(&["track_label", "left"]).unwrap_or_default(),
+                y: s.get_val(&["track_label", "top"]).unwrap_or_default(),
+            };
+        ctx.background_color = s.get_val_or(&["background_color"], ctx.background_color);
+        ctx.foreground_color = s.get_val_or(&["foreground_color"], ctx.foreground_color);
+        ctx.center = screen * s.get_val_or(&["center"], Vector2::new(0.5, 0.5));
+    })
     .run();
 }
 
-fn update(ctx: &mut AppState, input: &Input, style: &Style, dt: f32) {
+fn update(ctx: &mut AppState, input: &Input, _style: &Style, dt: f32) {
     if input.is_action_pressed("next") {
         ctx.playlist.play_next();
     } else if input.is_action_pressed("previous") {
@@ -714,26 +735,20 @@ fn update(ctx: &mut AppState, input: &Input, style: &Style, dt: f32) {
 
     ctx.visualizer.drain_ring(&ctx.ring_buffer);
     let m = ctx.visualizer.analyze(dt);
-    let screen = get_virtual_screen_size();
-    let center = screen * style.get_val_or(&["center"], Vector2::new(0.5, 0.5));
-
-    let background_color = style.get_val_or(&["background_color"], Color::from_hex(0x181818FF));
-    let foreground_color = style.get_val_or(&["foreground_color"], Color::from_hex(0xAAAAAAFF));
-
-    clear_background(background_color);
+    clear_background(ctx.background_color);
 
     let base_r = 70.0;
     let pulse_max = 50.0;
     let bar_height = 160.0;
     ctx.visualizer.render_radial_pulsing(
-        center,
+        ctx.center,
         base_r,
         pulse_max,
         bar_height,
         m,
         dt,
-        foreground_color,
-        background_color,
+        ctx.foreground_color,
+        ctx.background_color,
     );
 
     if input.is_action_down("show-name")
@@ -743,10 +758,10 @@ fn update(ctx: &mut AppState, input: &Input, style: &Style, dt: f32) {
         draw_text_with_supported_emojis(
             &ctx.fonts,
             &track_label,
-            Vector2 { x: 30.0, y: 30.0 },
+            ctx.track_label_position,
             24.0,
             2.0,
-            foreground_color,
+            ctx.foreground_color,
         );
     }
 }

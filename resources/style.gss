@@ -1,6 +1,12 @@
-foreground_color = 0xAAAAAAFF
-background_color = 0x181818FF
+foreground_color = 0x181818FF // 0xAAAAAAFF
+background_color = 0xAAAAAAFF // 0x181818FF
+
 center = {
     x = 50%,
     y = 50%
+}
+
+track_label = {
+    left = 2%
+    top  = 2%
 }
