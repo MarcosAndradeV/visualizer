@@ -675,7 +675,7 @@ fn main() {
             track_label_position: Vector2::zero(),
             background_color: Color::from_hex(0x181818FF),
             foreground_color: Color::from_hex(0xAAAAAAFF),
-            center: Vector2::zero()
+            center: Vector2::zero(),
         }
     })
     .set_fps(RENDER_FPS)
@@ -708,12 +708,11 @@ fn main() {
             };
         ctx.background_color = s.get_val_or(&["background_color"], ctx.background_color);
         ctx.foreground_color = s.get_val_or(&["foreground_color"], ctx.foreground_color);
-        ctx.center = screen * s.get_val_or(&["center"], Vector2::new(0.5, 0.5));
     })
     .run();
 }
 
-fn update(ctx: &mut AppState, input: &Input, _style: &Style, dt: f32) {
+fn update(ctx: &mut AppState, input: &Input, style: &Style, dt: f32) {
     if input.is_action_pressed("next") {
         ctx.playlist.play_next();
     } else if input.is_action_pressed("previous") {
@@ -740,8 +739,9 @@ fn update(ctx: &mut AppState, input: &Input, _style: &Style, dt: f32) {
     let base_r = 70.0;
     let pulse_max = 50.0;
     let bar_height = 160.0;
+    let screen = get_virtual_screen_size();
     ctx.visualizer.render_radial_pulsing(
-        ctx.center,
+        screen * style.get_val_or(&["center"], Vector2::new(0.5, 0.5)),
         base_r,
         pulse_max,
         bar_height,
